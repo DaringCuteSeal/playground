@@ -1,7 +1,8 @@
-use rand::{seq::SliceRandom, thread_rng};
+use rand::{rngs::ThreadRng, Rng};
 use std::process::exit;
 
 // jdasadsjkldsajkldsakdsakdsakj ??!?!?! emojis lmao
+// no i will not separate this into a separate file
 pub static EMOJIS: [&str; 1224] = [
     "👍",
     "👎",
@@ -1229,11 +1230,28 @@ pub static EMOJIS: [&str; 1224] = [
     "👨‍🏫",
 ];
 
+struct EmojiIter {
+    rng: ThreadRng,
+}
+
+impl EmojiIter {
+    fn new() -> Self {
+        Self {
+            rng: rand::thread_rng(),
+        }
+    }
+}
+impl Iterator for EmojiIter {
+    type Item = &'static str;
+    fn next(&mut self) -> Option<Self::Item> {
+        Some(EMOJIS[self.rng.gen_range(0..EMOJIS.len())])
+    }
+}
+
+// parse str to usize
 fn str_to_usize<T: AsRef<str>>(string: T) -> Result<usize, std::num::ParseIntError> {
     string.as_ref().parse::<usize>()
 }
-
-/// array of every single emoji
 
 /// get argument 1 from command line
 fn parse_args() -> usize {
@@ -1255,10 +1273,7 @@ fn parse_args() -> usize {
 
 fn main() {
     let emojis_amount = parse_args();
-    let mut rng = thread_rng();
-    let mut random_emojis: Vec<&str> = EMOJIS.to_vec();
-    random_emojis.shuffle(&mut rng);
-    for emoji in random_emojis.iter().take(emojis_amount) {
+    for emoji in EmojiIter::new().take(emojis_amount) {
         print!("{}", emoji);
     }
 }
